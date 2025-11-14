@@ -7,8 +7,13 @@ on:
     branches: [ main ]
 
 jobs:
-  backend-tests:
-    runs-on: ubuntu-latest
+  backend-tests-windows:
+    # For Windows Server 2016, use a self-hosted runner labeled accordingly.
+    # For GitHub-hosted, this uses a recent Windows Server image.
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
 
     steps:
       - name: Checkout repository
@@ -17,20 +22,20 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg libsndfile1
+          python-version: '3.10'
 
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m venv .venv
+          .\.venv\Scripts\Activate.ps1
+          pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest
 
-      - name: Run pytest
-        run: pytest
+      - name: Run backend tests
+        run: |
+          .\.venv\Scripts\Activate.ps1
+          pytest
 
   frontend-lint-build:
     runs-on: ubuntu-latest
