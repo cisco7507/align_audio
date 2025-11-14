@@ -156,15 +156,22 @@ async def get_alignment_job(job_id: str):
             return None
         return f"/media/{rel_path.as_posix()}"
 
+    # `result` is a plain dict loaded from JSON, not an AlignmentResult object.
     return AlignmentResultResponse(
-        job_id=result.job_id,
+        job_id=result.get("job_id", job_id),
         status=status,
-        offset_sec=result.offset_sec,
-        ffmpeg_command=result.ffmpeg_command,
-        inhouse_url=rel(result.inhouse_path),
-        external_url=rel(result.external_path),
-        aligned_audio_url=rel(result.aligned_audio_path),
-        waveform_png_url=rel(result.waveform_png_path),
-        similarity_png_url=rel(result.similarity_png_path),
-        logs=result.logs,
+        offset_sec=result.get("offset_sec"),
+        ffmpeg_command=result.get("ffmpeg_command"),
+        inhouse_url=rel(Path(result["inhouse_path"])) if result.get("inhouse_path") else None,
+        external_url=rel(Path(result["external_path"])) if result.get("external_path") else None,
+        aligned_audio_url=rel(Path(result["aligned_audio_path"]))
+        if result.get("aligned_audio_path")
+        else None,
+        waveform_png_url=rel(Path(result["waveform_png_path"]))
+        if result.get("waveform_png_path")
+        else None,
+        similarity_png_url=rel(Path(result["similarity_png_path"]))
+        if result.get("similarity_png_path")
+        else None,
+        logs=result.get("logs", []),
     )
